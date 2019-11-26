@@ -1,0 +1,37 @@
+Notes, since it seems I keep losing them.
+
+RPi Quick WiFi Gateway
+
+Let LAN interface = enxb83442385754
+Let LAN IP address= 192.168.250.1/24
+Let WAN interface = wlx345263464236
+
+1. Grab a fresh Raspbian Buster Lite image.
+2. Do initial configuration. Enable predictable network interface names.
+3. Enable IPv4 forwarding via /etc/sysctl.conf
+4. Reboot
+
+5. Configure static IP for ethernet interface via /etc/dhcpcd.conf.
+ - Just uncomment the static IP example.
+ - Change interface name accordingly (e.g. eth0 -> enxb83442385754)
+ - Uncomment static ip_address=192.168.250.1/24[Your LAN address here, CIDR format]
+ - I guess configuring static DNS is also cool.
+ - LEAVE THE REST UNTOUCHED, ESPECIALLY STATIC ROUTERS
+ 
+6. Reboot
+
+7. Configure iptables NAT appropriately.
+iptables --table nat --append POSTROUTING --out-interface wlx345263464236 -j MASQUERADE
+iptables --append FORWARD --in-interface enxb83442385754 -j ACCEPT
+
+    By this point, if you have a device connected to RPi's ethernet such as a
+    laptop (with IP address 192.168.250.2), you should already have internet.
+
+8. Install iptables-persistent. Answer YES when asked to save current iptables entries.
+9. Reboot to test everything.
+
+    You should still have internet access on said laptop.
+    
+10. Anything that needs to be connected to the Pi ethernet should have 192.168.250.x as IP address.
+    In this instance, I had my own WiFi router connected, with static IP 192.168.250.33. 
+    CAUTION: Technically, this is triple NAT.
